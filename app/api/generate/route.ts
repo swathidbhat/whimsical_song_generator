@@ -17,26 +17,40 @@ export async function POST(request: NextRequest) {
     // Generate unique meeting ID
     const meetingId = nanoid(10)
 
-    // TODO: Call teammate's video generation service
-    // For now, use a mock video URL for development
-    // Using a short test video for layout testing
-    const mockVideoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'
+    // Call teammate's video generation service
+    const VIDEO_SERVICE_URL = process.env.VIDEO_SERVICE_URL || 'http://localhost:5000'
     
-    // In production, this would be:
-    // const videoResponse = await fetch('TEAMMATE_VIDEO_SERVICE_URL', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ employeeName, employeeInfo })
-    // })
-    // const { videoUrl } = await videoResponse.json()
+    let videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'
+    let status: 'pending' | 'ready' | 'failed' = 'ready'
+    
+    try {
+      const videoResponse = await fetch(`${VIDEO_SERVICE_URL}/generate-video`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ employeeName, employeeInfo })
+      })
+      
+      if (videoResponse.ok) {
+        const data = await videoResponse.json()
+        videoUrl = data.videoUrl
+        status = data.status || 'ready'
+        console.log('Video generated successfully:', data)
+      } else {
+        console.error('Video service error:', await videoResponse.text())
+        // Fall back to mock video
+      }
+    } catch (error) {
+      console.error('Failed to call video service:', error)
+      // Fall back to mock video
+    }
 
     // Create session
     const session = storage.createSession({
       id: meetingId,
       employeeName,
       employeeInfo,
-      videoUrl: mockVideoUrl,
-      status: 'ready',
+      videoUrl,
+      status,
     })
 
     // Generate meeting link
