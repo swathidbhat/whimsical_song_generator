@@ -1,53 +1,116 @@
 # Dumb Dump Songs - Tasks
 
-## Project Status: VAN COMPLETE - Level 3 Assessed
+## Project Status: PLAN COMPLETE → Ready for IMPLEMENTATION
 
-## VAN Mode Tasks
-- [x] Gather project information
-- [x] Assess complexity (Level 3)
-- [x] Create Memory Bank structure
-- [x] Document project brief
-- [x] Initial task breakdown
-- [x] Determine next mode (PLAN)
+## PLAN Mode Tasks
+- [x] Create comprehensive implementation plan
+- [x] Define architecture
+- [x] Design component breakdown
+- [x] Establish integration contract with teammates
+- [x] Identify challenges and solutions
+- [x] Create timeline and checklist
 
-## Pending: PLAN Mode Initiation
+---
 
-### 🎯 Core Application (Person 1)
-- [ ] Set up web app structure (Next.js/React)
-- [ ] Create manager input form
-- [ ] Design meeting interface UI (Zoom-like)
-- [ ] Implement routing (manager view → meeting link)
+## YOUR FOCUS: Web Application Development
 
-### 🤖 AI Integration (Person 2)
-- [ ] Integrate OpenAI/LLM for lyric generation
-- [ ] Set up ElevenLabs API for voice synthesis
-- [ ] Connect Replicate API (ByteDance models)
-- [ ] Create video generation pipeline
+### Phase 1: Setup (0:00-0:15) ⏱️ 15 min
+- [ ] Create Next.js app with TypeScript
+- [ ] Install dependencies (nanoid, tailwindcss)
+- [ ] Set up project structure
+- [ ] Create API route stubs
+- [ ] Test dev server
 
-### 📹 Video & Recording (Person 3)
-- [ ] Implement webcam access
-- [ ] Record employee reaction
-- [ ] Video playback in meeting interface
-- [ ] Handle video streaming/buffering
+### Phase 2: Manager Interface (0:15-0:45) ⏱️ 30 min
+- [ ] Create \pp/manager/page.tsx\
+- [ ] Build input form (employee name + info)
+- [ ] Style with Tailwind
+- [ ] Implement \/api/generate\ endpoint
+- [ ] Generate unique meeting IDs
+- [ ] Display shareable link with copy button
+- [ ] Add loading states
+- [ ] Test with mock data
 
-### 🔗 Data Integration (Person 4)
-- [ ] Gmail API integration (optional)
-- [ ] Slack API integration (optional)
-- [ ] Design data extraction format
-- [ ] Create integration hooks for main app
+### Phase 3: Meeting Interface (0:45-1:30) ⏱️ 45 min
+- [ ] Create \pp/meeting/[id]/page.tsx\
+- [ ] Build Zoom-like UI layout
+- [ ] Implement video player component
+- [ ] Create \/api/meeting/[id]\ to fetch video URL
+- [ ] Style meeting interface (dark theme, realistic)
+- [ ] Add fake meeting controls (top bar)
+- [ ] Test video playback with sample MP4
 
-### 🚀 Deployment
-- [ ] Set up DigitalOcean environment
-- [ ] Configure environment variables
-- [ ] Deploy application
-- [ ] Test end-to-end flow
+### Phase 4: Recording (1:30-2:00) ⏱️ 30 min
+- [ ] Implement webcam access (getUserMedia)
+- [ ] Add webcam preview (PiP style)
+- [ ] Implement MediaRecorder API
+- [ ] Add recording indicator (red dot)
+- [ ] Handle webcam permissions
+- [ ] Test recording locally
 
-## Dependencies
-- Person 1 blocks Person 3 (need UI structure first)
-- Person 2 blocks deployment (need API integration)
-- Person 4 works independently (integration point needed)
+### Phase 5: Integration (2:00-2:30) ⏱️ 30 min
+- [ ] Get API endpoint from teammates
+- [ ] Connect \/api/generate\ to their video service
+- [ ] Test with real generated videos
+- [ ] Handle async video generation
+- [ ] Add error handling
+- [ ] End-to-end flow test
 
-## Time Allocation (3 hours total)
-- Hour 1: Setup + Core UI + API foundations
-- Hour 2: Integration + Video pipeline + Recording
-- Hour 3: Polish + Deployment + Testing
+### Phase 6: Deployment (2:30-2:45) ⏱️ 15 min
+- [ ] Build production version
+- [ ] Deploy to DigitalOcean
+- [ ] Set environment variables
+- [ ] Test deployed app
+- [ ] Fix any production issues
+
+### Phase 7: Final Polish (2:45-3:00) ⏱️ 15 min
+- [ ] Final UI tweaks
+- [ ] Test complete user flow
+- [ ] Prepare demo
+- [ ] Document how to use
+
+---
+
+## TEAMMATES' RESPONSIBILITIES (Not your concern)
+- Person 2: AI lyric generation
+- Person 2: ElevenLabs voice synthesis
+- Person 2: Replicate video generation (ByteDance models)
+- Person 4: Gmail/Slack integration (optional)
+
+---
+
+## INTEGRATION CONTRACT
+
+### What you need from teammates:
+\\\	ypescript
+POST /generate-video
+Body: {
+  employeeName: string
+  employeeInfo: string
+}
+Response: {
+  videoUrl: string
+  status: 'ready' | 'processing'
+}
+\\\
+
+### Critical: Agree on this contract in first 15 minutes!
+
+---
+
+## DEPENDENCIES & BLOCKERS
+- ⚠️ **CRITICAL**: Get video generation API endpoint from teammates ASAP
+- ⚠️ **BLOCKER**: Can't test integration until they have working endpoint
+- ✅ **SOLUTION**: Use mock video URL during development
+
+---
+
+## MVP CHECKLIST
+- [ ] Manager inputs employee info
+- [ ] Generate button works
+- [ ] Creates unique meeting link
+- [ ] Link opens realistic meeting UI
+- [ ] Video plays automatically
+- [ ] Webcam shows employee
+- [ ] Recording indicator visible
+- [ ] Demo-ready!
