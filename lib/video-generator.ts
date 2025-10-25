@@ -98,7 +98,7 @@ async function generateAvatar(audioUrl: string): Promise<string> {
   console.log('[Avatar Generation] Avatar image:', avatarImageUrl)
 
   const output = await replicate.run(
-    'bytedance/omni-human:71fc57c8935b99bd11ff44d0c98ea4f3ae3e824b93cf5dcc46b9a4f7b99e2a64',
+    'bytedance/omni-human:27ff118087d512ffb93b1d115bbf46c96e51b25dfb4ee30337d6fa9bece05f4a',
     {
       input: {
         audio: audioUrl,
@@ -140,12 +140,10 @@ export async function generateTerminationVideo(
     storage.updateSession(meetingId, { musicUrl })
     console.log(`[${meetingId}] Music generation complete`)
 
-    // Stage 3: Convert voice
-    currentStage = 'converting_voice'
-    storage.updateSession(meetingId, { status: 'converting_voice' })
-    const singingUrl = await convertVoice(musicUrl)
+    // Stage 3: Convert voice (TEMPORARILY SKIPPED)
+    console.log(`[${meetingId}] Skipping voice conversion - using music directly`)
+    const singingUrl = musicUrl // Use music URL directly instead of converting
     storage.updateSession(meetingId, { singingUrl })
-    console.log(`[${meetingId}] Voice conversion complete`)
 
     // Stage 4: Generate avatar video
     currentStage = 'generating_video'
