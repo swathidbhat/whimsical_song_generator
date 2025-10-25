@@ -7,8 +7,13 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    
+    console.log('🔍 Looking for meeting ID:', id)
+    console.log('📦 All sessions:', storage.getAllSessions().map(s => ({ id: s.id, name: s.employeeName })))
 
     const session = storage.getSession(id)
+    
+    console.log('📋 Session found:', session ? 'YES' : 'NO')
 
     if (!session) {
       return NextResponse.json(

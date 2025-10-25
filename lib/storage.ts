@@ -19,11 +19,14 @@ class Storage {
       createdAt: new Date(),
     }
     this.sessions.set(data.id, session)
+    console.log(`📝 Storage: Created session ${data.id}. Total sessions: ${this.sessions.size}`)
     return session
   }
 
   getSession(id: string): MeetingSession | undefined {
-    return this.sessions.get(id)
+    const session = this.sessions.get(id)
+    console.log(`🔎 Storage: Get session ${id}. Found: ${!!session}. Total sessions: ${this.sessions.size}`)
+    return session
   }
 
   updateSession(id: string, data: Partial<MeetingSession>): MeetingSession | undefined {
@@ -40,6 +43,16 @@ class Storage {
   }
 }
 
-// Singleton instance
-export const storage = new Storage()
+// Use global to persist across hot reloads in development
+declare global {
+  var __storage: Storage | undefined
+}
+
+// Singleton instance that survives hot reloads
+export const storage = global.__storage ?? new Storage()
+
+if (process.env.NODE_ENV !== 'production') {
+  global.__storage = storage
+}
+
 export type { MeetingSession }

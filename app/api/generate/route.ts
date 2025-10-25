@@ -53,6 +53,16 @@ export async function POST(request: NextRequest) {
       status,
     })
 
+    console.log('✅ Session created:', {
+      id: session.id,
+      name: session.employeeName,
+      videoUrl: session.videoUrl
+    })
+
+    // Verify session was stored
+    const verifySession = storage.getSession(meetingId)
+    console.log('🔍 Session verification:', verifySession ? 'Found' : 'NOT FOUND')
+
     // Generate meeting link
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
     const meetingLink = `${baseUrl}/meeting/${meetingId}`
