@@ -1,0 +1,33 @@
+{
+  "name": "dumb-dump-songs",
+  "version": "1.0.0",
+  "description": "AI-powered termination song web app",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SenaUU/dumb_dump_songs.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "next": "^15.1.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "nanoid": "^5.0.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.6",
+    "@types/react": "^19.0.6",
+    "@types/react-dom": "^19.0.2",
+    "typescript": "^5.7.3",
+    "tailwindcss": "^4.0.0",
+    "postcss": "^8.5.2",
+    "autoprefixer": "^10.4.20"
+  }
+}
