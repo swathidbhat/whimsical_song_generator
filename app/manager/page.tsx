@@ -5,9 +5,12 @@ import { useState } from 'react'
 export default function ManagerDashboard() {
   const [employeeName, setEmployeeName] = useState('')
   const [employeeInfo, setEmployeeInfo] = useState('')
+  const [employeeEmail, setEmployeeEmail] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [meetingLink, setMeetingLink] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [isSendingEmail, setIsSendingEmail] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,6 +43,40 @@ export default function ManagerDashboard() {
     }
   }
 
+  const handleSendEmail = async () => {
+    if (!employeeEmail || !meetingLink) return
+    
+    setError(null)
+    setIsSendingEmail(true)
+
+    try {
+      const response = await fetch('/api/send-invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          employeeName,
+          employeeEmail,
+          meetingLink,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send email')
+      }
+
+      setEmailSent(true)
+      alert('📧 Meeting invite sent successfully!')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send email')
+    } finally {
+      setIsSendingEmail(false)
+    }
+  }
+
   const copyToClipboard = () => {
     if (meetingLink) {
       navigator.clipboard.writeText(meetingLink)
@@ -50,8 +87,10 @@ export default function ManagerDashboard() {
   const handleReset = () => {
     setEmployeeName('')
     setEmployeeInfo('')
+    setEmployeeEmail('')
     setMeetingLink(null)
     setError(null)
+    setEmailSent(false)
   }
 
   return (
@@ -172,6 +211,67 @@ export default function ManagerDashboard() {
               </div>
             </div>
 
+            {/* Email Invite Section */}
+            <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-6 mb-6">
+              <div className="flex items-center mb-4">
+                <span className="text-2xl mr-2">📧</span>
+                <h3 className="text-lg font-semibold text-purple-900">
+                  Send Email Invite
+                </h3>
+              </div>
+              <p className="text-sm text-purple-700 mb-4">
+                Send an official-looking meeting invite directly to the employee's email
+              </p>
+              
+              <div className="space-y-3">
+                <input
+                  type="email"
+                  placeholder="employee@company.com"
+                  value={employeeEmail}
+                  onChange={(e) => setEmployeeEmail(e.target.value)}
+                  className="w-full px-4 py-3 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-gray-900"
+                  disabled={emailSent}
+                />
+                
+                {emailSent ? (
+                  <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Email sent successfully to {employeeEmail}!
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleSendEmail}
+                    disabled={!employeeEmail || isSendingEmail}
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 px-6 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSendingEmail ? (
+                      <span className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Sending Email...
+                      </span>
+                    ) : (
+                      '📨 Send Meeting Invite'
+                    )}
+                  </button>
+                )}
+                
+                <p className="text-xs text-purple-600 text-center">
+                  ⚠️ The email will look like an urgent HR meeting request
+                </p>
+              </div>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                {error}
+              </div>
+            )}
+
             <button
               onClick={handleReset}
               className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg transition"
@@ -187,7 +287,7 @@ export default function ManagerDashboard() {
           <ul className="text-sm text-blue-800 space-y-1">
             <li>1. Enter employee information</li>
             <li>2. AI generates a personalized termination song</li>
-            <li>3. Share the meeting link with the employee</li>
+            <li>3. Share the meeting link or send automated email</li>
             <li>4. Their reaction is recorded when they join</li>
           </ul>
         </div>
