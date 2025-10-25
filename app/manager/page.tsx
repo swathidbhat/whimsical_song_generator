@@ -55,14 +55,22 @@ export default function ManagerDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div 
+      className="min-h-screen py-12 px-4 bg-cover bg-center bg-no-repeat relative"
+      style={{
+        backgroundImage: 'url(/images/dumb-ways-to-die.jpg)',
+      }}
+    >
+      {/* Overlay for better readability */}
+      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      
+      <div className="max-w-2xl mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
             🎵 Dumb Dump Songs
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-gray-100 drop-shadow-md">
             Generate personalized termination songs
           </p>
         </div>

@@ -19,7 +19,8 @@ export async function POST(request: NextRequest) {
 
     // TODO: Call teammate's video generation service
     // For now, use a mock video URL for development
-    const mockVideoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+    // Using a short test video for layout testing
+    const mockVideoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'
     
     // In production, this would be:
     // const videoResponse = await fetch('TEAMMATE_VIDEO_SERVICE_URL', {
