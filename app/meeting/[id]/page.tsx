@@ -12,14 +12,40 @@ export default function MeetingPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isRecording, setIsRecording] = useState(false)
+  const [status, setStatus] = useState<string>('pending')
+  const [statusMessage, setStatusMessage] = useState('Please wait...')
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const webcamRef = useRef<HTMLVideoElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordedChunksRef = useRef<Blob[]>([])
 
-  // Fetch meeting data
+  // Helper to get status message
+  const getStatusMessage = (currentStatus: string): string => {
+    switch (currentStatus) {
+      case 'pending':
+        return 'Initializing your personalized termination song...'
+      case 'generating_lyrics':
+        return 'Writing your unique termination lyrics...'
+      case 'generating_music':
+        return 'Creating musical arrangement...'
+      case 'converting_voice':
+        return 'Converting to AI voice...'
+      case 'generating_video':
+        return 'Generating AI avatar video...'
+      case 'ready':
+        return 'Ready!'
+      case 'failed':
+        return 'Generation failed. Please try again.'
+      default:
+        return 'Processing...'
+    }
+  }
+
+  // Fetch meeting data with polling
   useEffect(() => {
+    let pollInterval: NodeJS.Timeout | null = null
+
     const fetchMeeting = async () => {
       try {
         const response = await fetch(`/api/meeting/${meetingId}`)
@@ -29,16 +55,47 @@ export default function MeetingPage() {
           throw new Error(data.error || 'Meeting not found')
         }
 
-        setVideoUrl(data.videoUrl)
         setEmployeeName(data.employeeName)
-        setIsLoading(false)
+        setStatus(data.status)
+        setStatusMessage(getStatusMessage(data.status))
+
+        // If video is ready, set it and stop polling
+        if (data.status === 'ready' && data.videoUrl) {
+          setVideoUrl(data.videoUrl)
+          setIsLoading(false)
+          if (pollInterval) {
+            clearInterval(pollInterval)
+          }
+        } else if (data.status === 'failed') {
+          // Stop polling on failure
+          setError(data.error || 'Video generation failed')
+          setIsLoading(false)
+          if (pollInterval) {
+            clearInterval(pollInterval)
+          }
+        }
+        // Otherwise keep polling
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load meeting')
         setIsLoading(false)
+        if (pollInterval) {
+          clearInterval(pollInterval)
+        }
       }
     }
 
+    // Initial fetch
     fetchMeeting()
+
+    // Poll every 3 seconds
+    pollInterval = setInterval(fetchMeeting, 3000)
+
+    // Cleanup
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval)
+      }
+    }
   }, [meetingId])
 
   // Set up webcam
@@ -122,9 +179,29 @@ export default function MeetingPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-zoom-darker flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Loading meeting...</p>
+        <div className="text-white text-center max-w-md">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-zoom-blue mx-auto mb-6"></div>
+          <h2 className="text-2xl font-bold mb-2">Generating Your Termination Song</h2>
+          <p className="text-gray-400 mb-4">{statusMessage}</p>
+          <div className="bg-gray-800 rounded-lg p-4 text-sm text-left">
+            <div className="flex items-center gap-2 mb-2">
+              <div className={`w-2 h-2 rounded-full ${status === 'generating_lyrics' || status === 'pending' ? 'bg-zoom-blue animate-pulse' : 'bg-green-500'}`}></div>
+              <span>Writing lyrics</span>
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className={`w-2 h-2 rounded-full ${status === 'generating_music' ? 'bg-zoom-blue animate-pulse' : status === 'generating_lyrics' || status === 'pending' ? 'bg-gray-600' : 'bg-green-500'}`}></div>
+              <span>Generating music</span>
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className={`w-2 h-2 rounded-full ${status === 'converting_voice' ? 'bg-zoom-blue animate-pulse' : ['generating_lyrics', 'generating_music', 'pending'].includes(status) ? 'bg-gray-600' : 'bg-green-500'}`}></div>
+              <span>Converting voice</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${status === 'generating_video' ? 'bg-zoom-blue animate-pulse' : status === 'ready' ? 'bg-green-500' : 'bg-gray-600'}`}></div>
+              <span>Creating video</span>
+            </div>
+          </div>
+          <p className="text-gray-500 text-sm mt-4">This usually takes 2-4 minutes...</p>
         </div>
       </div>
     )

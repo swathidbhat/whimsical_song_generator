@@ -53,7 +53,7 @@ def build_prompt(emp: EmployeeInfo) -> str:
 
 def generate_lyrics(emp: EmployeeInfo) -> str:
     """Generate lyrics using OpenAI"""
-    client = OpenAI()
+    client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
     prompt = build_prompt(emp)
     
     resp = client.chat.completions.create(
@@ -146,6 +146,6 @@ def health():
     return jsonify({"status": "ok"})
 
 if __name__ == '__main__':
-    # Run on port 5000
+    # Run on port 5001 (5000 often used by macOS AirPlay)
     # Your teammate should run: python lyrics_api.py
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True, use_reloader=False)

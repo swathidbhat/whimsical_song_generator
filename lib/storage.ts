@@ -1,13 +1,37 @@
 // Simple in-memory storage for hackathon
 // In production, use a database
 
+type SessionStatus =
+  | 'pending'
+  | 'generating_lyrics'
+  | 'generating_music'
+  | 'converting_voice'
+  | 'generating_video'
+  | 'ready'
+  | 'failed'
+
 interface MeetingSession {
   id: string
   employeeName: string
   employeeInfo: string
-  videoUrl: string
-  status: 'pending' | 'ready' | 'failed'
+
+  // Processing status
+  status: SessionStatus
+
+  // Stage outputs
+  lyrics?: string
+  musicUrl?: string      // Stage 2 output
+  singingUrl?: string    // Stage 3 output
+  videoUrl?: string      // Stage 4 output (final)
+
+  // Error tracking
+  error?: string
+  failedStage?: string
+
+  // Timestamps
   createdAt: Date
+  updatedAt?: Date
+  completedAt?: Date
 }
 
 class Storage {
@@ -32,8 +56,8 @@ class Storage {
   updateSession(id: string, data: Partial<MeetingSession>): MeetingSession | undefined {
     const session = this.sessions.get(id)
     if (!session) return undefined
-    
-    const updated = { ...session, ...data }
+
+    const updated = { ...session, ...data, updatedAt: new Date() }
     this.sessions.set(id, updated)
     return updated
   }
@@ -55,4 +79,4 @@ if (process.env.NODE_ENV !== 'production') {
   global.__storage = storage
 }
 
-export type { MeetingSession }
+export type { MeetingSession, SessionStatus }

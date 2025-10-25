@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { nanoid } from 'nanoid'
 import { storage } from '@/lib/storage'
+import { generateTerminationVideo } from '@/lib/video-generator'
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,40 +18,12 @@ export async function POST(request: NextRequest) {
     // Generate unique meeting ID
     const meetingId = nanoid(10)
 
-    // Call teammate's video generation service
-    const VIDEO_SERVICE_URL = process.env.VIDEO_SERVICE_URL || 'http://localhost:5000'
-    
-    let videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'
-    let status: 'pending' | 'ready' | 'failed' = 'ready'
-    
-    try {
-      const videoResponse = await fetch(`${VIDEO_SERVICE_URL}/generate-video`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ employeeName, employeeInfo })
-      })
-      
-      if (videoResponse.ok) {
-        const data = await videoResponse.json()
-        videoUrl = data.videoUrl
-        status = data.status || 'ready'
-        console.log('Video generated successfully:', data)
-      } else {
-        console.error('Video service error:', await videoResponse.text())
-        // Fall back to mock video
-      }
-    } catch (error) {
-      console.error('Failed to call video service:', error)
-      // Fall back to mock video
-    }
-
-    // Create session
+    // Create session with pending status
     const session = storage.createSession({
       id: meetingId,
       employeeName,
       employeeInfo,
-      videoUrl,
-      status,
+      status: 'pending',
     })
 
     console.log('✅ Session created:', {
@@ -67,17 +40,75 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
     const meetingLink = `${baseUrl}/meeting/${meetingId}`
 
-    return NextResponse.json({
+    // Return immediately with pending status
+    const response = NextResponse.json({
       success: true,
       meetingId,
       meetingLink,
-      videoUrl: session.videoUrl,
+      status: 'pending',
     })
+
+    // Start background processing (non-blocking)
+    // Stage 1: Generate lyrics via Flask service
+    processVideoGeneration(meetingId, employeeName, employeeInfo).catch(error => {
+      console.error(`[${meetingId}] Background processing failed:`, error)
+    })
+
+    return response
   } catch (error) {
     console.error('Error generating meeting:', error)
     return NextResponse.json(
       { error: 'Failed to generate meeting' },
       { status: 500 }
     )
+  }
+}
+
+/**
+ * Background processing function
+ * Generates lyrics, then triggers the Replicate pipeline
+ */
+async function processVideoGeneration(
+  meetingId: string,
+  employeeName: string,
+  employeeInfo: string
+): Promise<void> {
+  try {
+    console.log(`[${meetingId}] Starting background video generation`)
+
+    // Stage 1: Generate lyrics via Flask service
+    storage.updateSession(meetingId, { status: 'generating_lyrics' })
+    const VIDEO_SERVICE_URL = process.env.VIDEO_SERVICE_URL || 'http://localhost:5000'
+
+    const videoResponse = await fetch(`${VIDEO_SERVICE_URL}/generate-video`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ employeeName, employeeInfo }),
+    })
+
+    if (!videoResponse.ok) {
+      throw new Error(`Lyrics service error: ${await videoResponse.text()}`)
+    }
+
+    const data = await videoResponse.json()
+    const lyrics = data.lyrics
+
+    if (!lyrics) {
+      throw new Error('No lyrics returned from service')
+    }
+
+    console.log(`[${meetingId}] Lyrics generated:`, lyrics)
+    storage.updateSession(meetingId, { lyrics })
+
+    // Stages 2-4: Generate music, convert voice, generate video
+    await generateTerminationVideo(meetingId, employeeName, employeeInfo, lyrics)
+
+    console.log(`[${meetingId}] All stages complete!`)
+  } catch (error) {
+    console.error(`[${meetingId}] Processing error:`, error)
+    storage.updateSession(meetingId, {
+      status: 'failed',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
   }
 }
