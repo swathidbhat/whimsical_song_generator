@@ -75,8 +75,13 @@ export default function MeetingPage() {
           const a = document.createElement('a')
           a.href = url
           a.download = `reaction-${meetingId}.webm`
+          document.body.appendChild(a)
           a.click()
+          document.body.removeChild(a)
           URL.revokeObjectURL(url)
+          
+          // Show notification
+          alert(`🎥 Recording saved!\n\nFile: reaction-${meetingId}.webm\nCheck your Downloads folder (Ctrl+J in Chrome)`)
         }
 
         mediaRecorderRef.current = mediaRecorder
