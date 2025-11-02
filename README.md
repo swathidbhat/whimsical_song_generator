@@ -1,3 +1,6 @@
+Copied from SenaUU/dumb_dump_songs, a 'Dumb Things' hackathon project in a group of 4 that won 'Best Use of ByteDance Video Model'. This version will add features and change use case.
+
+----Original Readme----
 # 🎵 Dumb Dump Songs
 
 Fire your employees with a harmonious "fire" songs  and record thier reactions while he/she thinks it's a real video call! Their reaction will be automatically downloaded to their downloads folder.
